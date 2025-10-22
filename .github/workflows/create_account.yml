@@ -1,0 +1,68 @@
+name: Create Roblox Account
+
+on:
+  workflow_dispatch:  # Manual trigger dari GitHub UI
+  push:
+    branches:
+      - main  # Otomatis run ketika push ke branch main (optional)
+
+jobs:
+  create-account:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: 📦 Install dependencies
+      run: |
+        pip install requests
+        
+    - name: 🎮 Run Roblox Account Creator
+      run: |
+        python create_account.py
+        
+    - name: 📄 Display account info
+      if: always()
+      run: |
+        echo "=================================================="
+        echo "📋 ACCOUNT INFORMATION:"
+        echo "=================================================="
+        if [ -f "account_info.txt" ]; then
+          cat account_info.txt
+        else
+          echo "⚠️  Account info file not found"
+        fi
+        echo "=================================================="
+        
+    - name: 💾 Upload account info (TXT)
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: account-info-txt
+        path: account_info.txt
+        retention-days: 7
+        if-no-files-found: ignore
+        
+    - name: 💾 Upload account info (JSON)
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: account-info-json
+        path: account_info.json
+        retention-days: 7
+        if-no-files-found: ignore
+        
+    - name: 📝 Upload failed attempt log
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: failed-attempt-log
+        path: failed_attempt.txt
+        retention-days: 3
+        if-no-files-found: ignore
